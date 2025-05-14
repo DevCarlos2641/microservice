@@ -1,0 +1,97 @@
+
+services:
+
+  mysql-container:
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: student
+      MYSQL_ROOT_PASSWORD: ${STUDENT_DB_PASSWORD}
+    volumes:
+      - mysql-data:/var/lib/mysql  # Monta el volumen mysql-data
+    networks:
+      - my-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: mysql-container
+    ports:
+      - "8082:80"
+    depends_on:
+      - mysql-container
+    networks:
+      - my-network
+
+  msvc-eureka:
+    image: msvc-eureka
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - my-network
+
+  msvc-student:
+    image: msvc-student
+    ports:
+      - "8090:8090"
+    env_file: .env
+    environment:
+      DB_URL: ${STUDENT_DB_URL}
+      DB_USERNAME: ${STUDENT_DB_USERNAME}
+      DB_PASSWORD: ${STUDENT_DB_PASSWORD}
+    depends_on:
+      msvc-eureka:
+        condition: service_healthy
+    networks:
+      - my-network
+
+  msvc-course:
+    image: msvc-course
+    ports:
+      - "9090:9090"
+    depends_on:
+      msvc-eureka:
+        condition: service_healthy
+    networks:
+      - my-network
+
+  msvc-gateway:
+    image: msvc-gateway
+    ports:
+      - "8080:8080"
+    networks:
+      - my-network
+
+  mongo-server:
+    image: mongo:latest
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - my-network
+
+  mongo-client:
+    image: mongo-express:latest
+    depends_on:
+      - mongo-server
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongo-server
+      - ME_CONFIG_MONGODB_PORT=27017
+    ports:
+      - "8081:8081"
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    driver: bridge
+
+volumes:  # Define el volumen mysql-data
+  mysql-data:
+  mongodb_data:

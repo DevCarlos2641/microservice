@@ -1,0 +1,48 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: msvc-gateway
+  config:
+    import: optional:configserver:http://localhost:8888
+
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: msvc-student
+          uri: lb://MSVC-STUDENT
+          predicates:
+            - Path=/api/student/**
+
+        - id: msvc-course
+          uri: lb://MSVC-COURSE
+          predicates:
+            - Path=/api/course/**
+management:
+  endpoints:
+    web:
+      exposure:
+        include: gateway
+  endpoint:
+    gateway:
+      enabled: false
+    health:
+      show-details: always
+
+eureka:
+  instance:
+    hostname: msvc-gateway
+
+  client:
+    service-url:
+      defaultZone: http://msvc-eureka:8761/eureka
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.boot.actuate.endpoint.web: TRACE
