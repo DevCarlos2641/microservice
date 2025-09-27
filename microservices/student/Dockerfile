@@ -14,6 +14,7 @@ RUN ./gradlew build -x test --no-daemon || true
 # Ahora sí, copiamos el resto del proyecto
 COPY . .
 
+RUN chmod +x ./gradlew
 # Compilamos solo el microservicio student
 RUN ./gradlew :microservice:student:build -x test --no-daemon
 

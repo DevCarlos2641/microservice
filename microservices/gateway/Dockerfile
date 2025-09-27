@@ -14,6 +14,7 @@ RUN ./gradlew build -x test --no-daemon || true
 # Ahora sí, copiamos el resto del proyecto
 COPY . .
 
+RUN chmod +x ./gradlew
 RUN ./gradlew :microservice:gateway:build -x test --no-daemon
 
 FROM eclipse-temurin:21-jre

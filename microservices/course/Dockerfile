@@ -10,6 +10,7 @@ RUN ./gradlew build -x test --no-daemon || true
 
 COPY . .
 
+RUN chmod +x ./gradlew
 RUN ./gradlew :microservice:course:build -x test --no-daemon
 
 FROM eclipse-temurin:21-jre
