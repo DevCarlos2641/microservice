@@ -21,7 +21,7 @@ spring:
 
         - id: msvc-course
           uri: lb://MSVC-COURSE
-          predicates:or
+          predicates:
             - Path=/api/course/**
 management:
   endpoints:
